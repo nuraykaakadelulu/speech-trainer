@@ -1,11 +1,11 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import re
-import time
 
 st.set_page_config(page_title="AI Speech Fluency Trainer", page_icon="🎙️", layout="centered")
 
 st.title("🎙️ AI English Speech Fluency & Metric Diagnostic")
-st.write("Record your 1-minute responses. Use the built-in timers to track your speaking time, dictate the text via your keyboard, and run the analysis.")
+st.write("Use the live stopwatches below to time your speech, dictate the text via your keyboard mic, and calculate real metrics.")
 
 # Topics
 st.markdown("### 📋 Speaking Tasks (1 minute each)")
@@ -17,16 +17,31 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("#### Task 1: Hobby")
     
-    # Timer state management for Task 1
-    if "timer_1_running" not in st.session_state:
-        st.session_state.timer_1_running = False
-        st.session_state.time_1 = 60
-
-    if st.button("⏱️ Start/Reset Timer (Task 1)", key="btn_t1"):
-        st.session_state.timer_1_running = True
-        
-    if st.session_state.timer_1_running:
-        st.warning("⏳ Task 1 Time: Speak now! (Target: 60 sec)")
+    # Live Stopwatch HTML component for Task 1
+    components.html("""
+    <div style="font-family: sans-serif; text-align: center; padding: 12px; background: #f0f2f6; border-radius: 10px; border: 1px solid #dcdcdc;">
+        <div id="timer1" style="font-size: 28px; font-weight: bold; color: #262730; margin-bottom: 8px;">00:00</div>
+        <button onclick="startTimer1()" style="padding: 6px 14px; background: #ff4b4b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">⏱️ Start Stopwatch</button>
+        <button onclick="resetTimer1()" style="padding: 6px 14px; background: #717171; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 5px;">🔄 Reset</button>
+        <script>
+            let t1_interval, s1 = 0;
+            function startTimer1() {
+                clearInterval(t1_interval);
+                s1 = 0;
+                t1_interval = setInterval(() => {
+                    s1++;
+                    let m = Math.floor(s1 / 60), s = s1 % 60;
+                    document.getElementById('timer1').innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+                }, 1000);
+            }
+            function resetTimer1() {
+                clearInterval(t1_interval);
+                s1 = 0;
+                document.getElementById('timer1').innerText = "00:00";
+            }
+        </script>
+    </div>
+    """, height=110)
     
     transcript_1 = st.text_area(
         "Dictate transcript for Task 1:", 
@@ -37,15 +52,31 @@ with col1:
 with col2:
     st.markdown("#### Task 2: Artificial Intelligence")
     
-    if "timer_2_running" not in st.session_state:
-        st.session_state.timer_2_running = False
-        st.session_state.time_2 = 60
-
-    if st.button("⏱️ Start/Reset Timer (Task 2)", key="btn_t2"):
-        st.session_state.timer_2_running = True
-        
-    if st.session_state.timer_2_running:
-        st.warning("⏳ Task 2 Time: Speak now! (Target: 60 sec)")
+    # Live Stopwatch HTML component for Task 2
+    components.html("""
+    <div style="font-family: sans-serif; text-align: center; padding: 12px; background: #f0f2f6; border-radius: 10px; border: 1px solid #dcdcdc;">
+        <div id="timer2" style="font-size: 28px; font-weight: bold; color: #262730; margin-bottom: 8px;">00:00</div>
+        <button onclick="startTimer2()" style="padding: 6px 14px; background: #ff4b4b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">⏱️ Start Stopwatch</button>
+        <button onclick="resetTimer2()" style="padding: 6px 14px; background: #717171; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 5px;">🔄 Reset</button>
+        <script>
+            let t2_interval, s2 = 0;
+            function startTimer2() {
+                clearInterval(t2_interval);
+                s2 = 0;
+                t2_interval = setInterval(() => {
+                    s2++;
+                    let m = Math.floor(s2 / 60), s = s2 % 60;
+                    document.getElementById('timer2').innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+                }, 1000);
+            }
+            function resetTimer2() {
+                clearInterval(t2_interval);
+                s2 = 0;
+                document.getElementById('timer2').innerText = "00:00";
+            }
+        </script>
+    </div>
+    """, height=110)
 
     transcript_2 = st.text_area(
         "Dictate transcript for Task 2:", 
@@ -53,7 +84,7 @@ with col2:
         placeholder="Tap here, press the keyboard mic icon, and speak..."
     )
 
-# Real mathematical calculation function (including precise WPM based on assumed 60s speech)
+# Real mathematical calculation function
 def calculate_metrics(text, duration_seconds=60):
     if not text.strip():
         return 0, 0, 0, 0, 0
@@ -62,14 +93,11 @@ def calculate_metrics(text, duration_seconds=60):
     total_words = len(words)
     unique_words = len(set(words))
     
-    # Speech Rate (WPM) adjusted by actual speaking time
     minutes = duration_seconds / 60.0
     wpm = round(total_words / minutes) if minutes > 0 else 0
     
-    # Type-Token Ratio (TTR)
     ttr = unique_words / total_words if total_words > 0 else 0
     
-    # Mean Length of Utterance (MLU)
     sentences = [s for s in re.split(r'[.!?]+', text) if s.strip()]
     total_sentences = len(sentences) if len(sentences) > 0 else 1
     mlu = total_words / total_sentences
