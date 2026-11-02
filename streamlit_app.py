@@ -5,7 +5,7 @@ import re
 st.set_page_config(page_title="AI Speech Fluency Trainer", page_icon="🎙️", layout="centered")
 
 st.title("🎙️ AI English Speech Fluency & Metric Diagnostic")
-st.write("Use the live stopwatches below to time your speech, dictate the text via your keyboard mic, and get advanced linguistic metrics.")
+st.write("Use the live stopwatches (with 1-minute alarm) to time your speech, dictate or paste your transcript, and get advanced linguistic metrics.")
 
 # Topics
 st.markdown("### 📋 Speaking Tasks (1 minute each)")
@@ -17,67 +17,103 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("#### Task 1: Hobby")
     components.html("""
-    <div style="font-family: sans-serif; text-align: center; padding: 12px; background: #f0f2f6; border-radius: 10px; border: 1px solid #dcdcdc;">
-        <div id="timer1" style="font-size: 28px; font-weight: bold; color: #262730; margin-bottom: 8px;">00:00</div>
-        <button onclick="startTimer1()" style="padding: 6px 14px; background: #ff4b4b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">⏱️ Start Stopwatch</button>
-        <button onclick="resetTimer1()" style="padding: 6px 14px; background: #717171; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 5px;">🔄 Reset</button>
+    <div style="font-family: sans-serif; text-align: center; padding: 10px; background: #f0f2f6; border-radius: 10px; border: 1px solid #dcdcdc;">
+        <div id="timer1" style="font-size: 26px; font-weight: bold; color: #262730; margin-bottom: 6px;">00:00</div>
+        <button onclick="startTimer1()" style="padding: 5px 12px; background: #ff4b4b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">⏱️ Start 1-Min Timer</button>
+        <button onclick="resetTimer1()" style="padding: 5px 12px; background: #717171; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; margin-left: 4px;">🔄 Reset</button>
         <script>
             let t1_interval, s1 = 0;
+            function playBeep() {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator();
+                let gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 587.33; // D5 note
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            }
             function startTimer1() {
                 clearInterval(t1_interval);
                 s1 = 0;
+                document.getElementById('timer1').style.color = '#262730';
                 t1_interval = setInterval(() => {
                     s1++;
                     let m = Math.floor(s1 / 60), s = s1 % 60;
                     document.getElementById('timer1').innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+                    if (s1 === 60) {
+                        playBeep();
+                        document.getElementById('timer1').style.color = '#ff4b4b';
+                    }
                 }, 1000);
             }
             function resetTimer1() {
                 clearInterval(t1_interval);
                 s1 = 0;
                 document.getElementById('timer1').innerText = "00:00";
+                document.getElementById('timer1').style.color = '#262730';
             }
         </script>
     </div>
-    """, height=110)
+    """, height=105)
     
     transcript_1 = st.text_area(
-        "Dictate transcript for Task 1:", 
+        "Paste or dictate transcript for Task 1:", 
         key="t1", 
-        placeholder="Tap here, press the keyboard mic icon, and speak..."
+        placeholder="Paste your text here or tap the keyboard mic icon to dictate..."
     )
 
 with col2:
     st.markdown("#### Task 2: Artificial Intelligence")
     components.html("""
-    <div style="font-family: sans-serif; text-align: center; padding: 12px; background: #f0f2f6; border-radius: 10px; border: 1px solid #dcdcdc;">
-        <div id="timer2" style="font-size: 28px; font-weight: bold; color: #262730; margin-bottom: 8px;">00:00</div>
-        <button onclick="startTimer2()" style="padding: 6px 14px; background: #ff4b4b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">⏱️ Start Stopwatch</button>
-        <button onclick="resetTimer2()" style="padding: 6px 14px; background: #717171; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 5px;">🔄 Reset</button>
+    <div style="font-family: sans-serif; text-align: center; padding: 10px; background: #f0f2f6; border-radius: 10px; border: 1px solid #dcdcdc;">
+        <div id="timer2" style="font-size: 26px; font-weight: bold; color: #262730; margin-bottom: 6px;">00:00</div>
+        <button onclick="startTimer2()" style="padding: 5px 12px; background: #ff4b4b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">⏱️ Start 1-Min Timer</button>
+        <button onclick="resetTimer2()" style="padding: 5px 12px; background: #717171; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; margin-left: 4px;">🔄 Reset</button>
         <script>
             let t2_interval, s2 = 0;
+            function playBeep2() {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator();
+                let gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 587.33;
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            }
             function startTimer2() {
                 clearInterval(t2_interval);
                 s2 = 0;
+                document.getElementById('timer2').style.color = '#262730';
                 t2_interval = setInterval(() => {
                     s2++;
                     let m = Math.floor(s2 / 60), s = s2 % 60;
                     document.getElementById('timer2').innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+                    if (s2 === 60) {
+                        playBeep2();
+                        document.getElementById('timer2').style.color = '#ff4b4b';
+                    }
                 }, 1000);
             }
             function resetTimer2() {
                 clearInterval(t2_interval);
                 s2 = 0;
                 document.getElementById('timer2').innerText = "00:00";
+                document.getElementById('timer2').style.color = '#262730';
             }
         </script>
     </div>
-    """, height=110)
+    """, height=105)
 
     transcript_2 = st.text_area(
-        "Dictate transcript for Task 2:", 
+        "Paste or dictate transcript for Task 2:", 
         key="t2", 
-        placeholder="Tap here, press the keyboard mic icon, and speak..."
+        placeholder="Paste your text here or tap the keyboard mic icon to dictate..."
     )
 
 # Advanced mathematical calculation function
@@ -92,15 +128,12 @@ def calculate_advanced_metrics(text, duration_seconds=60):
     minutes = duration_seconds / 60.0
     wpm = round(total_words / minutes) if minutes > 0 else 0
     
-    # Type-Token Ratio (TTR)
     ttr = unique_words / total_words if total_words > 0 else 0
     
-    # Sentences & MLU
     sentences = [s for s in re.split(r'[.!?]+', text) if s.strip()]
     total_sentences = len(sentences) if len(sentences) > 0 else 1
     mlu = total_words / total_sentences
     
-    # Long words ratio (> 6 letters) - proxy for advanced vocabulary
     long_words = [w for w in words if len(w) > 6]
     long_word_ratio = len(long_words) / total_words if total_words > 0 else 0
     
