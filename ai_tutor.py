@@ -1,49 +1,52 @@
-import os
 from google import genai
 from google.genai import types
 import streamlit as st
 
-st.set_page_config(page_title="AI English Tutor", page_icon="🎓")
-st.title("🎓 AI Speaking & Grammar Tutor")
+st.set_page_config(
+    page_title="AI Speaking & Fluency Tutor", page_icon="🎓", layout="centered"
+)
+st.title("🎓 AI Speaking, Vocabulary & Fluency Tutor")
 st.write(
-    "Ask any questions about grammar, vocabulary, or speaking strategies!"
+    "Practice speaking, ask for vocabulary alternatives, check your phrasing,"
+    " or request feedback!"
 )
 
-# Подключаем API-ключ из секретов Streamlit
-client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+try:
+  client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
-# Инструкция-характер для ИИ-учителя
-SYSTEM_PROMPT = """
-You are an encouraging, patient, and professional English teacher (CEFR B2-C1 level).
-Your task is to help high school students overcome speaking anxiety, expand lexical diversity, and fix grammar mistakes.
-Rules:
-1. Keep explanations clear, concise, and structured with bullet points.
-2. Never just give a dry answer — give 1-2 natural speaking examples and ask a short follow-up question to keep the student practicing.
-3. If the student writes a sentence with a mistake, gently correct it and explain why.
-"""
+  # Расширенный промпт: теперь ИИ оценивает беглость, лексику и помогает с разговорной практикой
+  SYSTEM_PROMPT = """
+    You are an expert, encouraging, and interactive English Language Coach and Teacher for high school students. 
+    Your goal is to help students improve their speaking fluency, lexical diversity (expanding vocabulary), and structural accuracy.
+    
+    Rules for your responses:
+    1. Always keep a warm, supportive, and engaging tone. Avoid dry or robotic textbook answers.
+    2. If the user writes a practice sentence or a speaking snippet, evaluate it: point out strong vocabulary (lexical diversity), gently correct any grammar mistakes, and suggest a more natural/advanced alternative phrasing.
+    3. Always end your response with a short, engaging follow-up question or a quick speaking challenge to keep the student practicing.
+    4. Use structured bullet points for readability.
+    """
 
-# Инициализация истории чата в памяти браузера
-if "chat_history" not in st.session_state:
+  if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Выводим предыдущие сообщения
-for msg in st.session_state.chat_history:
+  for msg in st.session_state.chat_history:
     with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+      st.markdown(msg["content"])
 
-# Поле ввода вопроса
-if user_input := st.chat_input("Ask your question here..."):
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
+  if user_input := st.chat_input(
+      "Type your sentence, question, or speaking practice here..."
+  ):
+    st.session_state.chat_history.append(
+        {"role": "user", "content": user_input}
+    )
     with st.chat_message("user"):
-        st.markdown(user_input)
+      st.markdown(user_input)
 
-    # Формируем запрос с историей и ролью учителя
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=[msg["content"] for msg in st.session_state.chat_history],
         config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            temperature=0.7,
+            system_instruction=SYSTEM_PROMPT, temperature=0.7
         ),
     )
 
@@ -52,4 +55,10 @@ if user_input := st.chat_input("Ask your question here..."):
         {"role": "assistant", "content": ai_reply}
     )
     with st.chat_message("assistant"):
-        st.markdown(ai_reply)
+      st.markdown(ai_reply)
+
+except Exception as e:
+  st.error(
+      "Please configure your GEMINI_API_KEY in Streamlit Secrets to start the"
+      " chat."
+  )
