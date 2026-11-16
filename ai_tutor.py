@@ -1,9 +1,12 @@
 from google import genai
 from google.genai import types
+import os
 import streamlit as st
 
 st.set_page_config(
-    page_title="AI Speaking & Fluency Tutor", page_icon="🎓", layout="centered"
+    page_title="AI Speaking, Vocabulary & Fluency Tutor",
+    page_icon="🎓",
+    layout="centered",
 )
 st.title("🎓 AI Speaking, Vocabulary & Fluency Tutor")
 st.write(
@@ -12,9 +15,13 @@ st.write(
 )
 
 try:
-  client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+  # Безопасно передаем ключ в окружение (поддерживает ключи любого формата)
+  if "GEMINI_API_KEY" in st.secrets:
+    os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 
-  # Расширенный промпт: теперь ИИ оценивает беглость, лексику и помогает с разговорной практикой
+  client = genai.Client()
+
+  # Расширенный промпт для разговорной практики, лексики и беглости
   SYSTEM_PROMPT = """
     You are an expert, encouraging, and interactive English Language Coach and Teacher for high school students. 
     Your goal is to help students improve their speaking fluency, lexical diversity (expanding vocabulary), and structural accuracy.
@@ -50,15 +57,4 @@ try:
         ),
     )
 
-    ai_reply = response.text
-    st.session_state.chat_history.append(
-        {"role": "assistant", "content": ai_reply}
-    )
-    with st.chat_message("assistant"):
-      st.markdown(ai_reply)
 
-except Exception as e:
-  st.error(
-      "Please configure your GEMINI_API_KEY in Streamlit Secrets to start the"
-      " chat."
-  )
