@@ -47,7 +47,7 @@ if user_input := st.chat_input(
     st.markdown(user_input)
 
   response = client.models.generate_content(
-      model="gemini-2.5-flash",
+      model="gemini-2.0-flash",
       contents=[msg["content"] for msg in st.session_state.chat_history],
       config=types.GenerateContentConfig(
           system_instruction=SYSTEM_PROMPT, temperature=0.7
