@@ -2,12 +2,9 @@ import google.generativeai as genai
 import streamlit as st
 
 st.set_page_config(
-    page_title="AI Speaking, Vocabulary & Fluency Tutor",
-    page_icon="🎓",
-    layout="centered",
+    page_title="AI Speaking Tutor", page_icon="🎓", layout="centered"
 )
 
-# Настраиваем ключ (работает со всеми форматами: и AIza..., и AQ...)
 if "GEMINI_API_KEY" in st.secrets:
   genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
@@ -17,6 +14,7 @@ st.write(
     " or request feedback!"
 )
 
+# Используем стабильную модель gemini-1.5-flash
 SYSTEM_PROMPT = """
 You are an expert, encouraging, and interactive English Language Coach and Teacher for high school students. 
 Your goal is to help students improve their speaking fluency, lexical diversity (expanding vocabulary), and structural accuracy.
@@ -28,16 +26,13 @@ Rules for your responses:
 4. Use structured bullet points for readability.
 """
 
-# Используем стандартную модель через проверенный интерфейс чата
 model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
-    system_instruction=SYSTEM_PROMPT,
+    model_name="gemini-1.5-flash", system_instruction=SYSTEM_PROMPT
 )
 
 if "chat" not in st.session_state:
   st.session_state.chat = model.start_chat(history=[])
 
-# Отображаем историю
 for message in st.session_state.chat.history:
   role = "user" if message.role == "user" else "assistant"
   with st.chat_message(role):
