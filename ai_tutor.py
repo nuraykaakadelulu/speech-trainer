@@ -9,7 +9,6 @@ st.set_page_config(
     layout="centered",
 )
 
-# Безопасно загружаем ключ из секретов
 if "GEMINI_API_KEY" in st.secrets:
   os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 
@@ -46,11 +45,15 @@ if user_input := st.chat_input(
   with st.chat_message("user"):
     st.markdown(user_input)
 
+  # Собираем историю сообщений для отправки в модель
+  messages = [msg["content"] for msg in st.session_state.chat_history]
+
   response = client.models.generate_content(
       model="gemini-2.0-flash",
-      contents=[msg["content"] for msg in st.session_state.chat_history],
+      contents=messages,
       config=types.GenerateContentConfig(
-          system_instruction=SYSTEM_PROMPT, temperature=0.7
+          system_instruction=SYSTEM_PROMPT,
+          temperature=0.7,
       ),
   )
 
