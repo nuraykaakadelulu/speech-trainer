@@ -1,6 +1,4 @@
-from google import genai
-from google.genai import types
-import os
+import google.generativeai as genai
 import streamlit as st
 
 st.set_page_config(
@@ -9,10 +7,9 @@ st.set_page_config(
     layout="centered",
 )
 
+# Настраиваем ключ (работает со всеми форматами: и AIza..., и AQ...)
 if "GEMINI_API_KEY" in st.secrets:
-  os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
-
-client = genai.Client()
+  genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 st.title("🎓 AI Speaking, Vocabulary & Fluency Tutor")
 st.write(
@@ -31,35 +28,28 @@ Rules for your responses:
 4. Use structured bullet points for readability.
 """
 
-if "chat_history" not in st.session_state:
-  st.session_state.chat_history = []
+# Используем стандартную модель через проверенный интерфейс чата
+model = genai.GenerativeModel(
+    model_name="gemini-2.0-flash",
+    system_instruction=SYSTEM_PROMPT,
+)
 
-for msg in st.session_state.chat_history:
-  with st.chat_message(msg["role"]):
-    st.markdown(msg["content"])
+if "chat" not in st.session_state:
+  st.session_state.chat = model.start_chat(history=[])
+
+# Отображаем историю
+for message in st.session_state.chat.history:
+  role = "user" if message.role == "user" else "assistant"
+  with st.chat_message(role):
+    st.markdown(message.parts[0].text)
 
 if user_input := st.chat_input(
     "Type your sentence, question, or speaking practice here..."
 ):
-  st.session_state.chat_history.append({"role": "user", "content": user_input})
   with st.chat_message("user"):
     st.markdown(user_input)
 
-  # Собираем историю сообщений для отправки в модель
-  messages = [msg["content"] for msg in st.session_state.chat_history]
-
-  response = client.models.generate_content(
-      model="gemini-2.0-flash",
-      contents=messages,
-      config=types.GenerateContentConfig(
-          system_instruction=SYSTEM_PROMPT,
-          temperature=0.7,
-      ),
-  )
-
-  ai_reply = response.text
-  st.session_state.chat_history.append(
-      {"role": "assistant", "content": ai_reply}
-  )
   with st.chat_message("assistant"):
-    st.markdown(ai_reply)
+    with st.spinner("Thinking..."):
+      response = st.session_state.chat.send_message(user_input)
+      st.markdown(response.text)
